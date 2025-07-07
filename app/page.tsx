@@ -15,6 +15,7 @@ export default function Home() {
   const formRef = useRef<HTMLFormElement | null>(null);
   const [showDecimal, setShowDecimal] = useState(false);
   const [elapsedDecimal, setElapsedDecimal] = useState<string>("0.000");
+  const [lunchDecimal, setLunchDecimal] = useState<string>("0.000");
 
   useEffect(() => {
     // On mount, load from localStorage
@@ -74,6 +75,7 @@ export default function Home() {
       setElapsedTime("00:00");
       setLunchDuration("");
       setElapsedDecimal("0.000");
+      setLunchDecimal("0.000");
       return;
     }
     // If either lunchStart or lunchEnd is filled, require both
@@ -82,12 +84,14 @@ export default function Home() {
       setElapsedTime("00:00");
       setLunchDuration("");
       setElapsedDecimal("0.000");
+      setLunchDecimal("0.000");
       return;
     }
     const { elapsed, lunch, decimal } = calculateElapsedTime(start, end, lunchStart && lunchEnd ? lunchStart : undefined, lunchStart && lunchEnd ? lunchEnd : undefined);
     setElapsedTime(elapsed);
     setElapsedDecimal(decimal.toFixed(3));
     setLunchDuration(lunchStart && lunchEnd ? formatDuration(lunch) : "");
+    setLunchDecimal(lunchStart && lunchEnd ? (lunch / (1000 * 60 * 60)).toFixed(3) : "0.000");
     // Save to localStorage
     const toSave = { start, end, lunchStart, lunchEnd };
     setInputs(toSave);
@@ -149,7 +153,7 @@ export default function Home() {
             {showDecimal ? `${elapsedDecimal} hours` : elapsedTime}
           </p>
           {lunchDuration && (
-            <p className="text-white text-md text-center">Lunch Duration: <span className="text-pink-400 font-mono">{lunchDuration}</span></p>
+            <p className="text-white text-md text-center">Lunch Duration: <span className="text-pink-400 font-mono">{showDecimal ? `${lunchDecimal} hours` : lunchDuration}</span></p>
           )}
         </div>
         <div className="mt-6 text-center text-gray-400 text-xs">YC Ready • Built with Next.js & Tailwind CSS</div>
