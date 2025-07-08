@@ -11,6 +11,7 @@ export default function Home() {
     end: "",
     lunchStart: "",
     lunchEnd: "",
+    extraMinutes: "",
   });
   const formRef = useRef<HTMLFormElement | null>(null);
   const [showDecimal, setShowDecimal] = useState(false);
@@ -29,12 +30,13 @@ export default function Home() {
           if (parsed.end) formRef.current["end-time"].value = parsed.end;
           if (parsed.lunchStart) formRef.current["lunch-start"].value = parsed.lunchStart;
           if (parsed.lunchEnd) formRef.current["lunch-end"].value = parsed.lunchEnd;
+          if (parsed.extraMinutes) formRef.current["extra-minutes"].value = parsed.extraMinutes;
         }
       }, 0);
     }
   }, []);
 
-  const calculateElapsedTime = (start: string, end: string, lunchStart?: string, lunchEnd?: string) => {
+  const calculateElapsedTime = (start: string, end: string, lunchStart?: string, lunchEnd?: string, extraMinutes?: string) => {
     const startDate = new Date(`1970-01-01T${start}`);
     const endDate = new Date(`1970-01-01T${end}`);
     let elapsed = endDate.getTime() - startDate.getTime();
@@ -44,6 +46,11 @@ export default function Home() {
       const lunchEndDate = new Date(`1970-01-01T${lunchEnd}`);
       lunch = lunchEndDate.getTime() - lunchStartDate.getTime();
       elapsed -= lunch;
+    }
+    let extra = 0;
+    if (extraMinutes && !isNaN(Number(extraMinutes))) {
+      extra = Number(extraMinutes) * 60 * 1000;
+      elapsed += extra;
     }
     const hours = Math.floor(elapsed / (1000 * 60 * 60));
     const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
@@ -66,10 +73,12 @@ export default function Home() {
     const endInput = form.elements.namedItem("end-time") as HTMLInputElement | null;
     const lunchStartInput = form.elements.namedItem("lunch-start") as HTMLInputElement | null;
     const lunchEndInput = form.elements.namedItem("lunch-end") as HTMLInputElement | null;
+    const extraMinutesInput = form.elements.namedItem("extra-minutes") as HTMLInputElement | null;
     const start = startInput?.value || "";
     const end = endInput?.value || "";
     const lunchStart = lunchStartInput?.value || "";
     const lunchEnd = lunchEndInput?.value || "";
+    const extraMinutes = extraMinutesInput?.value || "";
     if (!start || !end) {
       setError("Start and end time are required.");
       setElapsedTime("00:00");
@@ -87,19 +96,19 @@ export default function Home() {
       setLunchDecimal("0.000");
       return;
     }
-    const { elapsed, lunch, decimal } = calculateElapsedTime(start, end, lunchStart && lunchEnd ? lunchStart : undefined, lunchStart && lunchEnd ? lunchEnd : undefined);
+    const { elapsed, lunch, decimal } = calculateElapsedTime(start, end, lunchStart && lunchEnd ? lunchStart : undefined, lunchStart && lunchEnd ? lunchEnd : undefined, extraMinutes);
     setElapsedTime(elapsed);
     setElapsedDecimal(decimal.toFixed(3));
     setLunchDuration(lunchStart && lunchEnd ? formatDuration(lunch) : "");
     setLunchDecimal(lunchStart && lunchEnd ? (lunch / (1000 * 60 * 60)).toFixed(3) : "0.000");
     // Save to localStorage
-    const toSave = { start, end, lunchStart, lunchEnd };
+    const toSave = { start, end, lunchStart, lunchEnd, extraMinutes };
     setInputs(toSave);
     localStorage.setItem("timeclock-inputs", JSON.stringify(toSave));
   };
 
   const handleReset = () => {
-    setInputs({ start: "", end: "", lunchStart: "", lunchEnd: "" });
+    setInputs({ start: "", end: "", lunchStart: "", lunchEnd: "", extraMinutes: "" });
     setElapsedTime("00:00");
     setLunchDuration("");
     setError("");
@@ -132,6 +141,10 @@ export default function Home() {
             <label htmlFor="end-time" className="text-white font-medium">End Time</label>
             <input type="time" id="end-time" name="end-time" required defaultValue={inputs.end} className="rounded-lg px-3 py-2 bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="extra-minutes" className="text-white font-medium">Extra Time (minutes) <span className="text-gray-400 text-xs">(optional)</span></label>
+            <input type="number" id="extra-minutes" name="extra-minutes" min="0" step="1" defaultValue={inputs.extraMinutes} placeholder="0" className="rounded-lg px-3 py-2 bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
           {error && <div className="text-red-400 text-sm font-semibold text-center">{error}</div>}
           <div className="flex flex-col gap-1">
             <button type="submit" className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg shadow-lg transition-all duration-150">Calculate</button>
@@ -149,11 +162,11 @@ export default function Home() {
               {showDecimal ? "Show HH:MM" : "Show Decimal"}
             </button>
           </div>
-          <p className="text-blue-400 font-mono text-2xl text-center" id="elapsed-time">
+          <p className="text-blue-400 font-mono text-2xl text-center" id="elapsed-time" style={{ fontFamily: 'var(--font-geist-mono), monospace' }}>
             {showDecimal ? `${elapsedDecimal} hours` : elapsedTime}
           </p>
           {lunchDuration && (
-            <p className="text-white text-md text-center">Lunch Duration: <span className="text-pink-400 font-mono">{showDecimal ? `${lunchDecimal} hours` : lunchDuration}</span></p>
+            <p className="text-white text-md text-center">Lunch Duration: <span className="text-pink-400 font-mono" style={{ fontFamily: 'var(--font-geist-mono), monospace' }}>{showDecimal ? `${lunchDecimal} hours` : lunchDuration}</span></p>
           )}
         </div>
         <div className="mt-6 text-center text-gray-400 text-xs">YC Ready • Built with Next.js & Tailwind CSS</div>
