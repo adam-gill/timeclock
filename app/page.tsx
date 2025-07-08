@@ -111,7 +111,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 px-4">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-700">
+      <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-700 py-5">
         <h1 className="text-3xl font-extrabold text-white mb-6 text-center tracking-tight">⏰ Timeclock</h1>
         <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
